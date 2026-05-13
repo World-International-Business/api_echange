@@ -623,51 +623,207 @@ Réponse <span class="number">201</span>:
   </div>
   <div class="alert alert-success"><span class="alert-icon">✅</span><span>Pas de login requis. Configurer la clé API une seule fois dans l'app — elle est valable indéfiniment.</span></div>
 
-  <h3>Flutter (Dart)</h3>
-  <pre><span class="comment">// config.dart</span>
-<span class="key">const</span> API_KEY  = <span class="string">'fxp_oNGqt67mlKz40hl0Me748a1rQQwMD0qrjVB1pL16xOY'</span>;
-<span class="key">const</span> BASE_URL = <span class="string">'https://forexplatform-api.onrender.com/api/v1'</span>;
+  <div class="alert alert-info"><span class="alert-icon">📱</span><span>Ton app est en <strong>React Native + Expo</strong>. Tous les exemples ci-dessous sont prêts à copier-coller directement dans ton projet.</span></div>
 
-<span class="comment">// Récupérer le taux</span>
-Future&lt;double&gt; getRate(String from, String to) async {
-  final res = await http.get(
-    Uri.parse('<span class="string">$BASE_URL/rates/$from/$to/</span>'),
-    headers: {<span class="string">'X-API-KEY'</span>: API_KEY},
-  );
-  return double.parse(jsonDecode(res.body)[<span class="string">'rate'</span>][<span class="string">'market_rate'</span>]);
-}
+  <h3>1. Installation des dépendances</h3>
+  <pre><span class="comment"># Dans ton projet Expo</span>
+npx expo install axios
+<span class="comment"># ou avec npm :</span>
+npm install axios</pre>
 
-<span class="comment">// Convertir un montant</span>
-Future&lt;Map&gt; convert(String from, String to, double amount) async {
-  final res = await http.post(
-    Uri.parse(<span class="string">'$BASE_URL/convert/'</span>),
-    headers: {<span class="string">'X-API-KEY'</span>: API_KEY, <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>},
-    body: jsonEncode({<span class="string">'from_currency'</span>: from, <span class="string">'to_currency'</span>: to, <span class="string">'amount'</span>: amount}),
-  );
-  return jsonDecode(res.body)[<span class="string">'conversion'</span>];
-}</pre>
+  <h3>2. Fichier de configuration API</h3>
+  <pre><span class="comment">// src/config/api.js</span>
 
-  <h3>React Native (JavaScript)</h3>
-  <pre><span class="comment">// api.js</span>
-<span class="key">const</span> API_KEY  = <span class="string">'fxp_oNGqt67mlKz40hl0Me748a1rQQwMD0qrjVB1pL16xOY'</span>;
-<span class="key">const</span> BASE_URL = <span class="string">'https://forexplatform-api.onrender.com/api/v1'</span>;
-<span class="key">const</span> HEADERS  = { <span class="string">'X-API-KEY'</span>: API_KEY, <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span> };
-
-<span class="comment">// Récupérer le taux</span>
-export const getRate = async (from, to) => {
-  const res  = await fetch(`${BASE_URL}/rates/${from}/${to}/`, { headers: HEADERS });
-  const data = await res.json();
-  return data.rate.market_rate;
+<span class="key">export const</span> API_CONFIG = {
+  BASE_URL: <span class="string">'https://forexplatform-api.onrender.com/api/v1'</span>,
+  API_KEY:  <span class="string">'fxp_oNGqt67mlKz40hl0Me748a1rQQwMD0qrjVB1pL16xOY'</span>,
 };
 
-<span class="comment">// Convertir</span>
-export const convert = async (from, to, amount) => {
-  const res  = await fetch(`${BASE_URL}/convert/`, {
-    method: <span class="string">'POST'</span>, headers: HEADERS,
-    body: JSON.stringify({ from_currency: from, to_currency: to, amount })
-  });
-  return (await res.json()).conversion;
+<span class="comment">// Headers à utiliser dans chaque requête</span>
+<span class="key">export const</span> API_HEADERS = {
+  <span class="string">'X-API-KEY'</span>:    API_CONFIG.API_KEY,
+  <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>,
+  <span class="string">'Accept'</span>:       <span class="string">'application/json'</span>,
 };</pre>
+
+  <h3>3. Service API complet</h3>
+  <pre><span class="comment">// src/services/forexService.js</span>
+import axios from <span class="string">'axios'</span>;
+import { API_CONFIG, API_HEADERS } from <span class="string">'../config/api'</span>;
+
+<span class="key">const</span> api = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  headers: API_HEADERS,
+  timeout: <span class="number">10000</span>, <span class="comment">// 10 secondes max</span>
+});
+
+<span class="comment">// ✅ Vérifier que l'API fonctionne</span>
+<span class="key">export const</span> checkHealth = async () => {
+  <span class="key">const</span> { data } = await api.get(<span class="string">'/health/'</span>);
+  return data;
+};
+
+<span class="comment">// ✅ Récupérer toutes les devises</span>
+<span class="key">export const</span> getCurrencies = async () => {
+  <span class="key">const</span> { data } = await api.get(<span class="string">'/currencies/'</span>);
+  return data.currencies; <span class="comment">// tableau de 33 devises</span>
+};
+
+<span class="comment">// ✅ Récupérer le taux entre deux devises (temps réel)</span>
+<span class="key">export const</span> getRate = async (fromCurrency, toCurrency) => {
+  <span class="key">const</span> { data } = await api.get(`/rates/${fromCurrency}/${toCurrency}/`);
+  return data.rate; <span class="comment">// { pair, market_rate, timestamp }</span>
+};
+
+<span class="comment">// ✅ Convertir un montant</span>
+<span class="key">export const</span> convertAmount = async (fromCurrency, toCurrency, amount) => {
+  <span class="key">const</span> { data } = await api.post(<span class="string">'/convert/'</span>, {
+    from_currency: fromCurrency,
+    to_currency:   toCurrency,
+    amount:        amount,
+  });
+  return data.conversion; <span class="comment">// { converted_amount, market_rate, fee_amount, ... }</span>
+};
+
+<span class="comment">// ✅ Login (pour wallets et transferts)</span>
+<span class="key">export const</span> login = async (username, password) => {
+  <span class="key">const</span> { data } = await api.post(<span class="string">'/auth/token/'</span>, { username, password });
+  return data; <span class="comment">// { access, refresh }</span>
+};
+
+<span class="comment">// ✅ Mes wallets (nécessite JWT)</span>
+<span class="key">export const</span> getWallets = async (jwtToken) => {
+  <span class="key">const</span> { data } = await api.get(<span class="string">'/wallets/'</span>, {
+    headers: { ...API_HEADERS, Authorization: `Bearer ${jwtToken}` }
+  });
+  return data.wallets;
+};</pre>
+
+  <h3>4. Écran de conversion — Exemple complet</h3>
+  <pre><span class="comment">// src/screens/ConvertScreen.js</span>
+import React, { useState, useEffect } from <span class="string">'react'</span>;
+import { View, Text, TextInput, TouchableOpacity,
+         ActivityIndicator, StyleSheet, Alert } from <span class="string">'react-native'</span>;
+import { getRate, convertAmount } from <span class="string">'../services/forexService'</span>;
+
+<span class="key">export default function</span> ConvertScreen() {
+  <span class="key">const</span> [from, setFrom]     = useState(<span class="string">'EUR'</span>);
+  <span class="key">const</span> [to, setTo]         = useState(<span class="string">'USD'</span>);
+  <span class="key">const</span> [amount, setAmount] = useState(<span class="string">''</span>);
+  <span class="key">const</span> [result, setResult] = useState(<span class="number">null</span>);
+  <span class="key">const</span> [rate, setRate]     = useState(<span class="number">null</span>);
+  <span class="key">const</span> [loading, setLoading] = useState(<span class="number">false</span>);
+
+  <span class="comment">// Charger le taux au démarrage</span>
+  useEffect(() => {
+    loadRate();
+  }, [from, to]);
+
+  <span class="key">const</span> loadRate = async () => {
+    <span class="key">try</span> {
+      <span class="key">const</span> data = await getRate(from, to);
+      setRate(data.market_rate);
+    } <span class="key">catch</span> (e) {
+      Alert.alert(<span class="string">'Erreur'</span>, <span class="string">'Impossible de récupérer le taux'</span>);
+    }
+  };
+
+  <span class="key">const</span> handleConvert = async () => {
+    <span class="key">if</span> (!amount || isNaN(amount) || Number(amount) &lt;= <span class="number">0</span>) {
+      Alert.alert(<span class="string">'Erreur'</span>, <span class="string">'Entrez un montant valide'</span>);
+      return;
+    }
+    setLoading(<span class="number">true</span>);
+    <span class="key">try</span> {
+      <span class="key">const</span> data = await convertAmount(from, to, Number(amount));
+      setResult(data);
+    } <span class="key">catch</span> (e) {
+      Alert.alert(<span class="string">'Erreur'</span>, e.response?.data?.error || <span class="string">'Erreur de conversion'</span>);
+    } <span class="key">finally</span> {
+      setLoading(<span class="number">false</span>);
+    }
+  };
+
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;Convertisseur Forex&lt;/Text&gt;
+
+      {rate &amp;&amp; (
+        &lt;Text style={styles.rateText}&gt;
+          Taux {from}/{to} : {rate} (temps réel)
+        &lt;/Text&gt;
+      )}
+
+      &lt;TextInput
+        style={styles.input}
+        placeholder={`Montant en ${from}`}
+        keyboardType=<span class="string">"numeric"</span>
+        value={amount}
+        onChangeText={setAmount}
+      /&gt;
+
+      &lt;TouchableOpacity style={styles.btn} onPress={handleConvert}&gt;
+        {loading
+          ? &lt;ActivityIndicator color=<span class="string">"#fff"</span> /&gt;
+          : &lt;Text style={styles.btnText}&gt;Convertir en {to}&lt;/Text&gt;}
+      &lt;/TouchableOpacity&gt;
+
+      {result &amp;&amp; (
+        &lt;View style={styles.result}&gt;
+          &lt;Text style={styles.resultAmount}&gt;{result.converted_amount} {to}&lt;/Text&gt;
+          &lt;Text style={styles.resultDetail}&gt;Taux : {result.market_rate}&lt;/Text&gt;
+          &lt;Text style={styles.resultDetail}&gt;Frais : {result.fee_amount} {from}&lt;/Text&gt;
+        &lt;/View&gt;
+      )}
+    &lt;/View&gt;
+  );
+}
+
+<span class="key">const</span> styles = StyleSheet.create({
+  container:    { flex: <span class="number">1</span>, padding: <span class="number">20</span>, backgroundColor: <span class="string">'#f8fafc'</span> },
+  title:        { fontSize: <span class="number">24</span>, fontWeight: <span class="string">'bold'</span>, color: <span class="string">'#0f3460'</span>, marginBottom: <span class="number">20</span> },
+  rateText:     { color: <span class="string">'#10b981'</span>, marginBottom: <span class="number">16</span>, fontSize: <span class="number">13</span> },
+  input:        { borderWidth: <span class="number">1</span>, borderColor: <span class="string">'#e2e8f0'</span>, borderRadius: <span class="number">8</span>,
+                  padding: <span class="number">12</span>, fontSize: <span class="number">16</span>, backgroundColor: <span class="string">'white'</span>, marginBottom: <span class="number">12</span> },
+  btn:          { backgroundColor: <span class="string">'#0f3460'</span>, borderRadius: <span class="number">8</span>, padding: <span class="number">14</span>, alignItems: <span class="string">'center'</span> },
+  btnText:      { color: <span class="string">'white'</span>, fontWeight: <span class="string">'bold'</span>, fontSize: <span class="number">16</span> },
+  result:       { marginTop: <span class="number">24</span>, backgroundColor: <span class="string">'white'</span>, borderRadius: <span class="number">10</span>, padding: <span class="number">20</span> },
+  resultAmount: { fontSize: <span class="number">28</span>, fontWeight: <span class="string">'800'</span>, color: <span class="string">'#0f3460'</span> },
+  resultDetail: { color: <span class="string">'#64748b'</span>, marginTop: <span class="number">6</span>, fontSize: <span class="number">13</span> },
+});</pre>
+
+  <h3>5. Gestion des erreurs réseau</h3>
+  <pre><span class="comment">// Intercepteur global dans src/services/forexService.js</span>
+api.interceptors.response.use(
+  response => response,
+  error => {
+    <span class="key">if</span> (!error.response) {
+      <span class="comment">// Pas de connexion internet</span>
+      throw new Error(<span class="string">'Vérifiez votre connexion internet'</span>);
+    }
+    <span class="key">switch</span> (error.response.status) {
+      <span class="key">case</span> <span class="number">403</span>: throw new Error(<span class="string">'Clé API invalide'</span>);
+      <span class="key">case</span> <span class="number">404</span>: throw new Error(<span class="string">'Devise non supportée'</span>);
+      <span class="key">case</span> <span class="number">429</span>: throw new Error(<span class="string">'Quota dépassé — réessayez dans 1 heure'</span>);
+      <span class="key">case</span> <span class="number">503</span>: throw new Error(<span class="string">'Service temporairement indisponible'</span>);
+      <span class="key">default</span>:  throw new Error(error.response.data?.error || <span class="string">'Erreur inconnue'</span>);
+    }
+  }
+);</pre>
+
+  <h3>6. Structure de fichiers recommandée</h3>
+  <pre>mon-app-expo/
+├── src/
+│   ├── config/
+│   │   └── <span class="string">api.js</span>          <span class="comment">← clé API + URL de base</span>
+│   ├── services/
+│   │   └── <span class="string">forexService.js</span>  <span class="comment">← toutes les fonctions API</span>
+│   └── screens/
+│       ├── <span class="string">HomeScreen.js</span>
+│       ├── <span class="string">ConvertScreen.js</span>   <span class="comment">← écran de conversion</span>
+│       ├── <span class="string">RatesScreen.js</span>     <span class="comment">← liste des taux</span>
+│       └── <span class="string">WalletScreen.js</span>    <span class="comment">← wallets (avec login)</span>
+└── <span class="string">App.js</span></pre>
 
   <h3>Tableau récapitulatif — Tous les endpoints</h3>
   <table>
