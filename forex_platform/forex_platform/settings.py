@@ -32,11 +32,15 @@ DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-RAILWAY_STATIC_URL = os.getenv('RAILWAY_STATIC_URL')
-if RAILWAY_STATIC_URL:
-    ALLOWED_HOSTS += [RAILWAY_STATIC_URL, f'.up.railway.app']
+ALLOWED_HOSTS += [
+    '.onrender.com',
+    'api-echange.onrender.com',
+    '.up.railway.app',
+]
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://api-echange.onrender.com',
     'https://*.up.railway.app',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
