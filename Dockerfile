@@ -15,8 +15,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN python forex_platform/manage.py collectstatic --noinput --settings=forex_platform.settings 2>/dev/null || true
+WORKDIR /app/forex_platform
+
+RUN python manage.py collectstatic --noinput --settings=forex_platform.settings 2>/dev/null || true
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "forex_platform.wsgi:application"]
+CMD ["sh", "-c", "python manage.py migrate --settings=forex_platform.settings && gunicorn forex_platform.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"]
