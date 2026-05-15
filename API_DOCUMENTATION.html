@@ -250,12 +250,12 @@ App Mobile  ◄──  <span class="string">{"market_rate": "1.17"}</span>  ◄�
 
   <div class="alert alert-info"><span class="alert-icon">💡</span><span>Pour l'intégration mobile : utilisez <strong>uniquement la clé API</strong>. Pas besoin de login, pas de token qui expire.</span></div>
 
-  <h3>Clé API pour les tests</h3>
+  <h3>Clé API de Production</h3>
   <div class="key-box">
     <div class="key-label">🔑 X-API-KEY — Tier Standard (1000 req/heure)</div>
-    <div class="key-val">fxp_oNGqt67mlKz40hl0Me748a1rQQwMD0qrjVB1pL16xOY</div>
+    <div class="key-val">fxp_XFGShWL3pYRt3wfMf4xLy_1_w9d7doUwImuUsfylQbA</div>
   </div>
-  <div class="alert alert-warning"><span class="alert-icon">⚠️</span><span>Cette clé est réservée aux tests. Une clé de <strong>production</strong> sera générée avant le déploiement final.</span></div>
+  <div class="alert alert-success"><span class="alert-icon">✅</span><span>Cette clé est <strong>active en production</strong>. Elle est prête à être intégrée dans l'app mobile.</span></div>
 
   <h3>Obtenir un JWT Token (si nécessaire)</h3>
   <div class="url-box">
@@ -291,10 +291,9 @@ App Mobile  ◄──  <span class="string">{"market_rate": "1.17"}</span>  ◄�
   </div>
   <table>
     <tr><th>Environnement</th><th>URL de base</th><th>Usage</th></tr>
-    <tr><td>🖥️ <strong>Local (développement)</strong></td><td><code>http://127.0.0.1:8000</code></td><td>Tests en local sur le poste du développeur</td></tr>
-    <tr><td>☁️ <strong>Production (Render)</strong></td><td><code>https://forexplatform-api.onrender.com</code></td><td>URL publique pour l'app mobile</td></tr>
+    <tr><td>☁️ <strong>Production (Render)</strong></td><td><code>https://api-echange.onrender.com/api/v1</code></td><td>URL publique pour l'app mobile</td></tr>
   </table>
-  <div class="alert alert-info"><span class="alert-icon">📱</span><span>Dans l'app mobile, remplacer <code>http://127.0.0.1:8000</code> par <code>https://forexplatform-api.onrender.com</code> avant le build APK.</span></div>
+  <div class="alert alert-success"><span class="alert-icon">✅</span><span>L'API est déployée en production et accessible immédiatement.</span></div>
 
   <h3>Format des requêtes</h3>
   <table>
@@ -402,7 +401,7 @@ App Mobile  ◄──  <span class="string">{"market_rate": "1.17"}</span>  ◄�
       <h3>Headers requis</h3>
       <table>
         <tr><th>Header</th><th>Valeur</th></tr>
-        <tr><td><code>X-API-KEY</code></td><td>fxp_oNGqt67mlKz40hl0Me748a1rQQwMD0qrjVB1pL16xOY</td></tr>
+        <tr><td><code>X-API-KEY</code></td><td>fxp_XFGShWL3pYRt3wfMf4xLy_1_w9d7doUwImuUsfylQbA</td></tr>
       </table>
       <h3>Réponse <span class="badge badge-200">200 OK</span></h3>
       <pre>{
@@ -440,7 +439,7 @@ App Mobile  ◄──  <span class="string">{"market_rate": "1.17"}</span>  ◄�
       <h3>Headers requis</h3>
       <table>
         <tr><th>Header</th><th>Valeur</th></tr>
-        <tr><td><code>X-API-KEY</code></td><td>fxp_oNGqt67mlKz40hl0Me748a1rQQwMD0qrjVB1pL16xOY</td></tr>
+        <tr><td><code>X-API-KEY</code></td><td>fxp_XFGShWL3pYRt3wfMf4xLy_1_w9d7doUwImuUsfylQbA</td></tr>
         <tr><td><code>Content-Type</code></td><td>application/json</td></tr>
       </table>
       <h3>Body — Paramètres</h3>
@@ -635,8 +634,8 @@ npm install axios</pre>
   <pre><span class="comment">// src/config/api.js</span>
 
 <span class="key">export const</span> API_CONFIG = {
-  BASE_URL: <span class="string">'https://forexplatform-api.onrender.com/api/v1'</span>,
-  API_KEY:  <span class="string">'fxp_oNGqt67mlKz40hl0Me748a1rQQwMD0qrjVB1pL16xOY'</span>,
+  BASE_URL: <span class="string">'https://api-echange.onrender.com/api/v1'</span>,
+  API_KEY:  <span class="string">'fxp_XFGShWL3pYRt3wfMf4xLy_1_w9d7doUwImuUsfylQbA'</span>,
 };
 
 <span class="comment">// Headers à utiliser dans chaque requête</span>
