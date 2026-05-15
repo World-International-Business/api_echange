@@ -82,8 +82,12 @@
         <strong>Endpoint de création automatique (protégé par secret) :</strong><br><br>
         <code>GET /api/v1/setup/create-key/?secret=changeme123</code><br><br>
         <strong>Première création :</strong> Utiliser l'URL ci-dessus<br>
-        <strong>Régénérer une clé :</strong> Ajouter <code>&reset=true</code><br><br>
-        Exemple : <code>https://api-echange.onrender.com/api/v1/setup/create-key/?secret=changeme123&reset=true</code>
+        <strong>Régénérer une clé :</strong> Ajouter <code>&reset=true</code><br>
+        Exemple : <code>https://api-echange.onrender.com/api/v1/setup/create-key/?secret=changeme123&reset=true</code><br><br>
+        <strong>🔐 Personnaliser le secret :</strong> La valeur <code>changeme123</code> est la valeur par défaut définie dans la variable d'environnement <code>SETUP_SECRET</code> sur Render. Pour changer le secret :<br>
+        1. Aller sur Render → Service → Environment<br>
+        2. Modifier la variable <code>SETUP_SECRET</code><br>
+        3. Redéployer l'application
       </div>
     </div>
 

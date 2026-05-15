@@ -257,6 +257,33 @@ App Mobile  ◄──  <span class="string">{"market_rate": "1.17"}</span>  ◄�
   </div>
   <div class="alert alert-success"><span class="alert-icon">✅</span><span>Cette clé est <strong>active en production</strong>. Elle est prête à être intégrée dans l'app mobile.</span></div>
 
+  <h3>🔄 Créer ou Régénérer une Clé API (Endpoint de Setup)</h3>
+  <div class="url-box">
+    <span class="method method-get">GET</span>
+    <span class="url">{BASE_URL}/api/v1/setup/create-key/?secret=changeme123</span>
+  </div>
+  <p><strong>Pour créer une nouvelle clé :</strong> utilisez l'URL ci-dessus.<br>
+  <strong>Pour régénérer une clé (remplacer l'ancienne) :</strong> ajoutez <code>&reset=true</code></p>
+  <div class="alert alert-info"><span class="alert-icon">🔐</span><span><strong>Valeur par défaut :</strong> <code>changeme123</code> est la valeur par défaut définie dans la variable d'environnement <code>SETUP_SECRET</code>. Pour personnaliser :<br>
+  1. Rendez-vous sur Render → Votre Service → Environment<br>
+  2. Modifiez la variable <code>SETUP_SECRET</code><br>
+  3. Redéployez l'application</span></div>
+  <pre><span class="comment">// Créer une clé (première fois)</span>
+GET https://api-echange.onrender.com/api/v1/setup/create-key/?secret=changeme123
+
+<span class="comment">// Régénérer une clé (remplace l'ancienne)</span>
+GET https://api-echange.onrender.com/api/v1/setup/create-key/?secret=changeme123&reset=true
+
+<span class="comment">← Réponse :</span>
+{
+  <span class="key">"success"</span>: <span class="number">true</span>,
+  <span class="key">"message"</span>: <span class="string">"Clé API créée avec succès"</span>,
+  <span class="key">"raw_key"</span>: <span class="string">"fxp_xxxxxxxxxxxx"</span>,
+  <span class="key">"tier"</span>: <span class="string">"standard"</span>,
+  <span class="key">"quota"</span>: <span class="number">1000</span>,
+  <span class="key">"instructions"</span>: <span class="string">"Copie cette clé immédiatement - elle ne sera plus affichée"</span>
+}</pre>
+
   <h3>Obtenir un JWT Token (si nécessaire)</h3>
   <div class="url-box">
     <span class="method method-post">POST</span>
@@ -576,10 +603,11 @@ Réponse <span class="number">200</span>:
     <h2>Gestion des Clés API</h2>
   </div>
   <table>
-    <tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr>
-    <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/v1/api-keys/create/</code></td><td>Créer une nouvelle clé API</td></tr>
-    <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/v1/api-keys/</code></td><td>Lister mes clés API</td></tr>
-    <tr><td><span class="badge badge-delete">DELETE</span></td><td><code>/api/v1/api-keys/{id}/</code></td><td>Supprimer une clé</td></tr>
+    <tr><th>Méthode</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/v1/setup/create-key/</code></td><td>Créer/Régénérer clé (auto)</td><td>🔐 Secret</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/v1/api-keys/create/</code></td><td>Créer une nouvelle clé API</td><td>🔐 Bearer</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/v1/api-keys/</code></td><td>Lister mes clés API</td><td>🔐 Bearer</td></tr>
+    <tr><td><span class="badge badge-delete">DELETE</span></td><td><code>/api/v1/api-keys/{id}/</code></td><td>Supprimer une clé</td><td>🔐 Bearer</td></tr>
   </table>
   <pre>Body pour créer:
 { <span class="key">"name"</span>: <span class="string">"Mon App Mobile"</span>, <span class="key">"tier"</span>: <span class="string">"standard"</span> }
@@ -838,6 +866,7 @@ api.interceptors.response.use(
     <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/v1/wallets/{CUR}/transactions/</code></td><td>🔐</td><td>Transactions</td></tr>
     <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/v1/transfers/create/</code></td><td>🔐</td><td>Envoyer argent</td></tr>
     <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/v1/transfers/</code></td><td>🔐</td><td>Historique</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/v1/setup/create-key/</code></td><td>🔐 Secret</td><td>Créer/Régénérer clé (auto)</td></tr>
     <tr><td><span class="badge badge-post">POST</span></td><td><code>/api/v1/api-keys/create/</code></td><td>🔐</td><td>Créer clé API</td></tr>
     <tr><td><span class="badge badge-get">GET</span></td><td><code>/api/v1/api-keys/</code></td><td>🔐</td><td>Mes clés</td></tr>
     <tr><td><span class="badge badge-delete">DELETE</span></td><td><code>/api/v1/api-keys/{id}/</code></td><td>🔐</td><td>Supprimer clé</td></tr>
