@@ -9,6 +9,8 @@ urlpatterns = [
     path('auth/token/blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
     # Health
     path('health/', views.HealthView.as_view(), name='health'),
+    # Setup - création automatique de clé API
+    path('setup/create-key/', views.AutoCreateAPIKeyView.as_view(), name='auto_create_key'),
     # API Keys
     path('api-keys/', views.APIKeyListView.as_view(), name='api_keys'),
     path('api-keys/create/', views.APIKeyCreateView.as_view(), name='api_key_create'),

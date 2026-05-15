@@ -1,3 +1,4 @@
+import os
 from django.utils.timezone import now
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -5,7 +6,64 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from django.db import connection
 from django.core.cache import cache
+from django.contrib.auth.models import User
 from .models import APIClient
+
+
+class AutoCreateAPIKeyView(APIView):
+    """
+    Vue temporaire pour créer automatiquement une clé API.
+    Protégée par un secret dans les variables d'environnement.
+    GET /api/v1/setup/create-key/?secret=TON_SECRET
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        secret = request.query_params.get('secret', '')
+        expected_secret = os.getenv('SETUP_SECRET', 'changeme123')
+
+        if secret != expected_secret:
+            return Response({'error': 'Invalid secret'}, status=403)
+
+        # Créer un utilisateur système si nécessaire
+        user, created = User.objects.get_or_create(
+            username='system_api',
+            defaults={'email': 'system@forexplatform.local', 'is_active': True}
+        )
+
+        # Vérifier si une clé existe déjà
+        existing = APIClient.objects.filter(user=user, is_active=True).first()
+        if existing:
+            return Response({
+                'success': True,
+                'message': 'Une clé existe déjà',
+                'api_key_prefix': existing.api_key_prefix,
+                'tier': existing.tier,
+                'quota': existing.quota_requests_per_hour,
+                'created_at': existing.created_at,
+            })
+
+        # Générer une nouvelle clé
+        raw_key, key_hash, prefix = APIClient.generate_key()
+        client = APIClient.objects.create(
+            user=user,
+            name='Auto-generated Mobile App Key',
+            api_key_prefix=prefix,
+            api_key_hash=key_hash,
+            tier='standard',
+            quota_requests_per_hour=1000,
+            is_active=True,
+        )
+
+        return Response({
+            'success': True,
+            'message': 'Clé API créée avec succès',
+            'raw_key': raw_key,
+            'api_key_prefix': prefix,
+            'tier': client.tier,
+            'quota': client.quota_requests_per_hour,
+            'instructions': 'Copie cette clé immédiatement - elle ne sera plus affichée',
+        }, status=201)
 
 
 class HealthView(APIView):
