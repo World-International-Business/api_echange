@@ -15,11 +15,13 @@ class AutoCreateAPIKeyView(APIView):
     Vue temporaire pour créer automatiquement une clé API.
     Protégée par un secret dans les variables d'environnement.
     GET /api/v1/setup/create-key/?secret=TON_SECRET
+    GET /api/v1/setup/create-key/?secret=TON_SECRET&reset=true  (pour régénérer)
     """
     permission_classes = [AllowAny]
 
     def get(self, request):
         secret = request.query_params.get('secret', '')
+        reset = request.query_params.get('reset', '').lower() == 'true'
         expected_secret = os.getenv('SETUP_SECRET', 'changeme123')
 
         if secret != expected_secret:
@@ -33,15 +35,19 @@ class AutoCreateAPIKeyView(APIView):
 
         # Vérifier si une clé existe déjà
         existing = APIClient.objects.filter(user=user, is_active=True).first()
-        if existing:
+        if existing and not reset:
             return Response({
                 'success': True,
-                'message': 'Une clé existe déjà',
+                'message': 'Une clé existe déjà. Utilisez ?reset=true pour régénérer.',
                 'api_key_prefix': existing.api_key_prefix,
                 'tier': existing.tier,
                 'quota': existing.quota_requests_per_hour,
                 'created_at': existing.created_at,
             })
+
+        # Si reset=true, supprimer l'ancienne clé
+        if existing and reset:
+            existing.delete()
 
         # Générer une nouvelle clé
         raw_key, key_hash, prefix = APIClient.generate_key()
@@ -57,7 +63,7 @@ class AutoCreateAPIKeyView(APIView):
 
         return Response({
             'success': True,
-            'message': 'Clé API créée avec succès',
+            'message': 'Clé API créée avec succès' + (' (ancienne clé remplacée)' if reset else ''),
             'raw_key': raw_key,
             'api_key_prefix': prefix,
             'tier': client.tier,
