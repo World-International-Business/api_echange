@@ -9,6 +9,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
+    supervisor \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
@@ -20,6 +21,11 @@ WORKDIR /app/forex_platform
 
 RUN python manage.py collectstatic --noinput --settings=forex_platform.settings 2>/dev/null || true
 
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate --settings=forex_platform.settings && gunicorn forex_platform.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
